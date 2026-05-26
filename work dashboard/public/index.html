@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>업무 대시보드</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- ═══ 로그인 화면 ═══════════════════════════════════════════════════════════ -->
+<div id="login-screen">
+  <div class="login-bg"></div>
+  <div class="login-card">
+    <div class="login-icon">📊</div>
+    <h1>업무 대시보드</h1>
+    <p>팀 업무를 한 눈에 관리하세요</p>
+    <a href="/auth/google" class="btn-google">
+      <svg width="18" height="18" viewBox="0 0 18 18"><path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844a4.14 4.14 0 0 1-1.796 2.716v2.259h2.908c1.702-1.567 2.684-3.875 2.684-6.615z"/><path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z"/><path fill="#FBBC05" d="M3.964 10.71A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.042l3.007-2.332z"/><path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.958L3.964 6.29C4.672 4.163 6.656 3.58 9 3.58z"/></svg>
+      Google 계정으로 로그인
+    </a>
+    <p class="login-note">구글 계정이 있다면 누구나 접속 가능합니다</p>
+  </div>
+</div>
+
+<!-- ═══ 대시보드 ═══════════════════════════════════════════════════════════════ -->
+<div id="dashboard" class="hidden">
+
+  <!-- 헤더 -->
+  <header class="header">
+    <div class="header-left">
+      <span class="logo">📊 업무 대시보드</span>
+      <span id="current-datetime" class="header-date"></span>
+    </div>
+    <div class="header-right">
+      <span class="online-badge">🟢 <span id="online-count">0</span>명 접속 중</span>
+      <button class="hbtn" id="send-email-btn" title="일일 결산 이메일 발송">📧 결산 발송</button>
+      <button class="hbtn" id="settings-btn" title="설정">⚙️ 설정</button>
+      <div class="user-chip">
+        <img id="user-avatar" src="" alt="" class="avatar">
+        <span id="user-name"></span>
+      </div>
+    </div>
+  </header>
+
+  <!-- 메인 그리드 (4열 × 3행) -->
+  <main class="grid">
+
+    <!-- 1. 채팅 (1열, 행 1~3 전체) -->
+    <div class="card card-chat">
+      <div class="card-head">
+        <span class="card-title">💬 팀 채팅</span>
+        <span class="badge" id="msg-count">0</span>
+      </div>
+      <div class="chat-messages" id="chat-messages"></div>
+      <div class="chat-input-wrap">
+        <input type="text" id="chat-input" class="chat-input" placeholder="메시지 입력 후 Enter...">
+        <button id="chat-send" class="btn-send">전송</button>
+      </div>
+    </div>
+
+    <!-- 2. 포스트잇 (2열, 1행) -->
+    <div class="card card-postit">
+      <div class="card-head">
+        <span class="card-title">📌 포스트잇</span>
+        <button class="btn-sm" id="add-postit-btn">+ 추가</button>
+      </div>
+      <div class="postit-list" id="postit-list"></div>
+    </div>
+
+    <!-- 3. 오늘 업무 (3열, 1행) -->
+    <div class="card card-daily accent-blue">
+      <div class="card-head">
+        <span class="card-title">📅 오늘 업무</span>
+        <span class="tag" id="today-label"></span>
+      </div>
+      <div class="stat-row">
+        <div class="stat"><b id="daily-hours">0</b><small>시간</small></div>
+        <div class="stat"><b id="daily-tasks">0</b><small>건</small></div>
+      </div>
+      <div class="chart-box"><canvas id="daily-chart"></canvas></div>
+      <div class="log-mini" id="daily-log-list"></div>
+    </div>
+
+    <!-- 4. 분기 현황 (4열, 1행) -->
+    <div class="card card-quarterly accent-orange">
+      <div class="card-head">
+        <span class="card-title">🗓️ 분기 현황</span>
+        <span class="tag" id="quarter-label"></span>
+      </div>
+      <div class="stat-row">
+        <div class="stat"><b id="quarterly-hours">0</b><small>시간</small></div>
+        <div class="stat"><b id="quarterly-tasks">0</b><small>건</small></div>
+      </div>
+      <div class="chart-box"><canvas id="quarterly-chart"></canvas></div>
+    </div>
+
+    <!-- 5. 팀 현황 (2열, 2행) -->
+    <div class="card card-team">
+      <div class="card-head">
+        <span class="card-title">👥 팀 현황</span>
+        <span class="badge admin-badge hidden" id="admin-badge">관리자</span>
+      </div>
+      <div id="team-content">
+        <p class="muted-msg">관리자 모드 활성화 시<br>팀원 업무 현황을 확인할 수 있습니다.</p>
+      </div>
+    </div>
+
+    <!-- 6. 주간 현황 (3열, 2행) -->
+    <div class="card card-weekly accent-green">
+      <div class="card-head">
+        <span class="card-title">📊 주간 현황</span>
+        <span class="tag" id="week-label"></span>
+      </div>
+      <div class="stat-row">
+        <div class="stat"><b id="weekly-hours">0</b><small>시간</small></div>
+        <div class="stat"><b id="weekly-tasks">0</b><small>건</small></div>
+      </div>
+      <div class="chart-box"><canvas id="weekly-chart"></canvas></div>
+    </div>
+
+    <!-- 7. 월간 현황 (4열, 2행) -->
+    <div class="card card-monthly accent-purple">
+      <div class="card-head">
+        <span class="card-title">📈 월간 현황</span>
+        <span class="tag" id="month-label"></span>
+      </div>
+      <div class="stat-row">
+        <div class="stat"><b id="monthly-hours">0</b><small>시간</small></div>
+        <div class="stat"><b id="monthly-tasks">0</b><small>건</small></div>
+      </div>
+      <div class="chart-box"><canvas id="monthly-chart"></canvas></div>
+    </div>
+
+    <!-- 8. 업무 기록 (2열, 3행) -->
+    <div class="card card-input">
+      <div class="card-head">
+        <span class="card-title">✏️ 업무 기록</span>
+      </div>
+      <form id="work-form" class="work-form">
+        <input type="text" id="wf-task" class="fi" placeholder="업무 내용을 입력하세요" required>
+        <div class="fi-row">
+          <input type="number" id="wf-hours" class="fi" placeholder="시간" step="0.5" min="0" max="24">
+          <select id="wf-category" class="fi">
+            <option value="일반">일반</option>
+            <option value="회의">회의</option>
+            <option value="문서">문서 작업</option>
+            <option value="보고">보고</option>
+            <option value="외근">외근</option>
+            <option value="교육">교육</option>
+            <option value="기타">기타</option>
+          </select>
+        </div>
+        <textarea id="wf-notes" class="fi fi-ta" placeholder="메모 (선택사항)"></textarea>
+        <button type="submit" class="btn-primary">💾 업무 저장</button>
+      </form>
+    </div>
+
+    <!-- 9. 연간 현황 (3열, 3행) -->
+    <div class="card card-annual accent-indigo">
+      <div class="card-head">
+        <span class="card-title">📆 연간 현황</span>
+        <span class="tag" id="year-label"></span>
+      </div>
+      <div class="stat-row">
+        <div class="stat"><b id="annual-hours">0</b><small>시간</small></div>
+        <div class="stat"><b id="annual-tasks">0</b><small>건</small></div>
+      </div>
+      <div class="chart-box"><canvas id="annual-chart"></canvas></div>
+    </div>
+
+    <!-- 10. 결산 메모 (4열, 3행) -->
+    <div class="card card-memo">
+      <div class="card-head">
+        <span class="card-title">📋 결산 메모</span>
+        <button class="btn-sm" id="save-memo-btn">저장</button>
+      </div>
+      <textarea id="settlement-memo" class="memo-area" placeholder="오늘의 결산, 특이사항, 내일 할 일 등을 자유롭게 기록하세요..."></textarea>
+    </div>
+
+  </main>
+</div>
+
+<!-- ═══ 설정 모달 ══════════════════════════════════════════════════════════════ -->
+<div id="settings-modal" class="modal hidden">
+  <div class="modal-box">
+    <div class="modal-head">
+      <h2>⚙️ 설정</h2>
+      <button class="close-btn" id="close-settings">✕</button>
+    </div>
+    <div class="modal-body">
+
+      <div class="setting-group">
+        <label class="setting-label">테마</label>
+        <div class="seg-ctrl">
+          <button class="seg-btn active" data-theme="dark">🌙 다크</button>
+          <button class="seg-btn" data-theme="light">☀️ 라이트</button>
+        </div>
+      </div>
+
+      <div class="setting-group">
+        <label class="setting-label">관리자 모드</label>
+        <p class="setting-desc">팀원 업무 현황 조회 및 역할 관리가 가능합니다</p>
+        <div class="admin-row">
+          <input type="password" id="admin-pw-input" class="fi" placeholder="관리자 비밀번호 입력">
+          <button id="toggle-admin-btn" class="btn-secondary">활성화</button>
+        </div>
+        <p class="setting-hint" id="admin-status-text">현재 상태: 비활성화</p>
+      </div>
+
+      <div class="setting-group">
+        <label class="setting-label">자동 이메일 결산</label>
+        <p class="setting-desc">매일 오후 6시, 일일 결산 보고서를 자동으로 이메일로 발송합니다</p>
+        <label class="toggle-wrap">
+          <input type="checkbox" id="email-auto-toggle">
+          <span class="toggle-slider"></span>
+          <span class="toggle-label">자동 발송 활성화</span>
+        </label>
+      </div>
+
+      <div class="setting-group">
+        <label class="setting-label">내 정보</label>
+        <div class="user-info-box" id="settings-user-info"></div>
+      </div>
+
+      <div class="setting-group">
+        <a href="/auth/logout" class="btn-danger">🚪 로그아웃</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ 포스트잇 추가 모달 ══════════════════════════════════════════════════════ -->
+<div id="postit-modal" class="modal hidden">
+  <div class="modal-box modal-sm">
+    <div class="modal-head">
+      <h2>📌 포스트잇 추가</h2>
+      <button class="close-btn" id="close-postit">✕</button>
+    </div>
+    <div class="modal-body">
+      <textarea id="postit-input" class="fi fi-ta" placeholder="포스트잇 내용을 입력하세요..." style="height:80px"></textarea>
+      <div class="color-picker-row">
+        <span class="setting-label">색상 선택</span>
+        <div class="color-swatches" id="color-swatches">
+          <div class="swatch active" data-color="#fef08a" style="background:#fef08a"></div>
+          <div class="swatch" data-color="#86efac" style="background:#86efac"></div>
+          <div class="swatch" data-color="#93c5fd" style="background:#93c5fd"></div>
+          <div class="swatch" data-color="#f9a8d4" style="background:#f9a8d4"></div>
+          <div class="swatch" data-color="#fca5a5" style="background:#fca5a5"></div>
+          <div class="swatch" data-color="#c4b5fd" style="background:#c4b5fd"></div>
+        </div>
+      </div>
+      <button id="save-postit-btn" class="btn-primary">저장</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ Scripts ═══════════════════════════════════════════════════════════════ -->
+<!-- socket.io: 서버 실행 시 자동 제공, 없으면 더미로 대체 -->
+<script>
+  // 서버 없이 실행 시 socket.io 더미 객체 생성
+  window.__socketFallback = true;
+</script>
+<script src="/socket.io/socket.io.js" onerror="window.__socketFallback=true"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
